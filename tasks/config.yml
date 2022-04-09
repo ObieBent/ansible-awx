@@ -1,0 +1,57 @@
+
+---
+
+- name: "config | Create {{ awx_default_data_dir }}"
+  file:
+    path: "{{ awx_data_dir }}"
+    state: directory
+  tags: config
+
+- name: config | Link "{{ awx_data_dir }}" to "{{ awx_default_data_dir }}"
+  tags: config
+  file:
+    src: "{{ awx_data_dir }}"
+    dest: "{{ awx_default_data_dir }}"
+    state: link
+  when: awx_data_dir != awx_default_data_dir
+
+- name: config | Clone AWX into configured directory
+  tags: config
+  git:
+    repo: "{{ awx_repo }}"
+    dest: "{{ awx_repo_dir }}"
+    version: "{{ awx_version }}"
+    force: yes
+  register: awx_new_version
+
+- name: config | Modify install vars
+  tags: config
+  lineinfile:
+    path: "{{ awx_repo_dir }}/installer/inventory"
+    regexp: "^{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - regexp: "host_port"
+      line: "host_port={{ awx_port }}"
+    - regexp: "create_preload_data"
+      line: "create_preload_data=False"
+    - regexp: "#project_data_dir"
+      line: "project_data_dir={{ awx_project_dir }}"
+    - regexp: "pg_hostname"
+      line: "pg_hostname={{ awx_db_host }}"
+    - regexp: "pg_username"
+      line: "pg_username={{ awx_db_user }}"
+    - regexp: "pg_password"
+      line: "pg_password={{ awx_db_pass }}"
+    - regexp: "admin_user"
+      line: "admin_user={{ awx_admin_user }}"
+    - regexp: "admin_password"
+      line: "admin_password={{ awx_admin_pass }}"
+    - regexp: "docker_compose_dir"
+      line: "docker_compose_dir={{ awx_project_dir }}/docker-compose"
+
+- name: config | Add custom config
+  template:
+    src: "etc/httpd/conf.d/custom/proxy.conf.j2"
+    dest: "{{ apache2_confd_custom_dir }}/{{ awx_vhost_name }}.conf"
+  notify: "Restart Apache"

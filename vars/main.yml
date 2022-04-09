@@ -1,0 +1,4 @@
+---
+# vars file for ansible-awx
+
+awx_default_data_dir: /var/lib/awx

@@ -1,0 +1,38 @@
+---
+# tasks file for ansible-awx
+
+# Include per-environment variables
+- name:  Include per-environment variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - files:
+        - '{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml'           # CentOS-6.5
+        - '{{ ansible_os_family }}-{{ ansible_distribution_version }}.yml'              # RedHat-6.5
+        - '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml'     # CentOS-6
+        - '{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml'        # RedHat-6
+        - '{{ ansible_distribution }}.yml'                                              # CentOS
+        - '{{ ansible_os_family }}.yml'                                                 # RedHat
+        - 'main.yml'
+      paths: '../vars'
+  tags: always
+
+- name: Install AWX dependencies
+  package:
+    name: "{{ awx_package_dependencies }}"
+    state: present
+
+- name: Install docker compose
+  tags: install
+  pip:
+    name: "docker-compose"
+    executable: "pip{{ ansible_python.version.major }}"
+
+- import_tasks: config.yml
+  tags: config
+
+- name: Run the AWX installation playbook
+  tags: install
+  command: "ansible-playbook -i inventory install.yml"
+  args:
+    chdir: "{{ awx_repo_dir }}/installer"
+   when: awx_new_version is changed

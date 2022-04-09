@@ -1,0 +1,15 @@
+---
+# vars file for ansible-awx
+
+awx_default_data_dir: /var/lib/awx
+awx_package_dependencies:
+  - git
+  - gcc
+  - gcc-c++
+  - ansible
+  - bzip2
+  - python-devel
+  - python-pip
+  - python-setuptools
+  - python-docker
+  - wget

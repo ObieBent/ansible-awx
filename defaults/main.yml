@@ -1,0 +1,29 @@
+---
+
+# Global var
+docker_compose_path: /usr/local/bin/docker-compose
+
+# defaults file for ansible-awx
+awx_repo: https://github.com/ansible/awx.git
+awx_data_dir: "{{ awx_default_data_dir }}"
+awx_repo_dir: "{{ awx_data_dir }}/src"
+awx_version: 17.0.0
+awx_project_dir: "{{ awx_data_dir }}/projects"
+
+# Vhost
+awx_vhost_name: awx
+awx_vhost_aliases: ["{{ ansible_fqdn }}"]
+awx_vhost_ssl_enabled: true
+awx_vhost_ssl_redirect: "{{ awx_vhost_ssl_enabled | bool }}"
+
+# Admin acces
+awx_admin_user: admin
+awx_admin_pass: changeme
+awx_port: 3000
+
+#database
+awx_db_name: awx
+awx_db_user: awx
+awx_db_pass: "{{ lookup('password', 'credential/{{ inventory_hostname }}-awx_db_pass chars=ascii_letters,digits') }}"
+awx_db_host: "{{ ansible_fqdn }}"
+awx_db_port: 5432
