@@ -35,4 +35,4 @@
   command: "ansible-playbook -i inventory install.yml"
   args:
     chdir: "{{ awx_repo_dir }}/installer"
-   when: awx_new_version is changed
+  when: awx_new_version is changed
